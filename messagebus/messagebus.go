@@ -22,3 +22,16 @@ func (mb *MessageBus) Subscribe(topic string) <-chan interface{} {
 
 	return ch
 }
+
+func (mb *MessageBus) Unsubscribe(topic string, ch <-chan interface{}) {
+	mb.lock.Lock()
+	defer mb.lock.Unlock()
+
+	for i, callback := range mb.callBack[topic] {
+		if callback == ch {
+			mb.callBack[topic] = append(mb.callBack[topic][:i], mb.callBack[topic][i+1:]...)
+			close(callback)
+			break
+		}
+	}
+}
