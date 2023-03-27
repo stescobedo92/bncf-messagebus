@@ -6,9 +6,19 @@ import (
 
 type MessageBus struct {
 	lock     sync.Mutex
-	callback map[string][]chan interface{}
+	callBack map[string][]chan interface{}
 }
 
 func New() *MessageBus {
-	return &MessageBus{callbacks: make(map[string][]chan interface{})}
+	return &MessageBus{callBack: make(map[string][]chan interface{})}
+}
+
+func (mb *MessageBus) Subscribe(topic string) <-chan interface{} {
+	mb.lock.Lock()
+	defer mb.lock.Unlock()
+
+	ch := make(chan interface{}, 1)
+	mb.callBack[topic] = append(mb.callBack[topic], ch)
+
+	return ch
 }
