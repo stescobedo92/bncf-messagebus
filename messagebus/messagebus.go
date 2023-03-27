@@ -35,3 +35,16 @@ func (mb *MessageBus) Unsubscribe(topic string, ch <-chan interface{}) {
 		}
 	}
 }
+
+func (mb *MessageBus) Publish(topic string, message interface{}) {
+	mb.lock.Lock()
+	defer mb.lock.Unlock()
+
+	for _, callback := range mb.callBack[topic] {
+		select {
+		case callback <- message:
+		default:
+			// in thi step skip this callback if the channel is full
+		}
+	}
+}
